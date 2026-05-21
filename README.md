@@ -40,6 +40,7 @@ See the atelier documentation for the full module sequence and methodology.
 | `docker-compose.yml` | Toolchain (terraform, migrate, seed, api, k6) per ADR-DDA-013 — nothing on host except Docker |
 | `infra/bootstrap/` | Terraform state backend (S3 + DynamoDB lock) |
 | `infra/data-model/` | VPC + Aurora PostgreSQL Serverless v2 + Secrets Manager (system of record) |
+| `infra/dev-access/` | **Dev-only.** IGW + public subnet + EC2 bastion with SSM. Opens an `aws ssm start-session` port forward from your host to Aurora. Apply before migrations / psql / smoke tests; destroy when idle. See `infra/dev-access/README.md`. |
 | `migrations/` | `golang-migrate` schema migrations (TPC-H DDL) |
 
 ## Development

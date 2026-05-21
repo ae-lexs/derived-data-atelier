@@ -5,7 +5,12 @@
 #   - AWS CLI configured with the SSO profile "derived-data-atelier"
 #   - An active SSO session (run `aws sso login --profile derived-data-atelier`
 #     before invoking any compose service — the token cache lives in ~/.aws/sso/
-#     and is shared with the container via the read-only mount below)
+#     and is shared with the container via the read-write mount below)
+#
+# The ~/.aws mount is read-write (not read-only) because the AWS SDK refreshes
+# the SSO access token to ~/.aws/sso/cache/<hash>.json when the cached token
+# nears expiry. A read-only mount works for the first session after `aws sso
+# login` but fails the next time the SDK tries to refresh.
 
 services:
   terraform:
@@ -13,7 +18,7 @@ services:
     working_dir: /workspace
     volumes:
       - .:/workspace
-      - ~/.aws:/root/.aws:ro
+      - ~/.aws:/root/.aws
       - terraform_plugin_cache:/root/.terraform.d/plugin-cache
     environment:
       AWS_PROFILE: ${AWS_PROFILE:-derived-data-atelier}
