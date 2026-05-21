@@ -1,0 +1,44 @@
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files (and backups)
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Exclude all .tfvars files — likely to contain sensitive data
+*.tfvars
+*.tfvars.json
+
+# Ignore override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Saved plan files
+*tfplan*
+
+# CLI configuration files
+.terraformrc
+terraform.rc
+
+# Lock files SHOULD be committed; do not exclude them.
+# (.terraform.lock.hcl is intentionally NOT in this gitignore.)
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# macOS
+.DS_Store
+
+# Editor scratch
+.vscode/
+.idea/
+*.swp
+*.swo

@@ -1,0 +1,35 @@
+# docker-compose.yml — Derived Data Atelier toolchain
+#
+# Per ADR-DDA-013, all toolchain runs inside Docker. The host needs:
+#   - Docker + Compose
+#   - AWS CLI configured with the SSO profile "derived-data-atelier"
+#   - An active SSO session (run `aws sso login --profile derived-data-atelier`
+#     before invoking any compose service — the token cache lives in ~/.aws/sso/
+#     and is shared with the container via the read-only mount below)
+
+services:
+  terraform:
+    image: hashicorp/terraform:1.9
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - ~/.aws:/root/.aws:ro
+      - terraform_plugin_cache:/root/.terraform.d/plugin-cache
+    environment:
+      AWS_PROFILE: ${AWS_PROFILE:-derived-data-atelier}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      TF_PLUGIN_CACHE_DIR: /root/.terraform.d/plugin-cache
+      TF_INPUT: "0"
+  migrate:
+    image: migrate/migrate:v4.17.1
+    volumes:
+      - ./migrations:/migrations:ro
+    entrypoint: ["migrate"]
+    command:
+      - "-path=/migrations"
+      - "-database=postgres://${PGUSER}:${PGPASSWORD}@${PGHOST}:5432/${PGDATABASE}?sslmode=require"
+      - "up"
+    profiles: [seed]
+
+volumes:
+  terraform_plugin_cache:
