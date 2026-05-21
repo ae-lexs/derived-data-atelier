@@ -35,6 +35,20 @@ services:
       - "-database=postgres://${PGUSER}:${PGPASSWORD}@${PGHOST}:5432/${PGDATABASE}?sslmode=require"
       - "up"
     profiles: [seed]
+  seed:
+    build:
+      context: .
+      dockerfile: docker/dbgen.Dockerfile
+    environment:
+      PGHOST: ${PGHOST}
+      PGUSER: ${PGUSER}
+      PGPASSWORD: ${PGPASSWORD}
+      PGDATABASE: ${PGDATABASE}
+      TPCH_SCALE: "1"
+    volumes:
+      - tpch_data:/data
+    profiles: [seed]
 
 volumes:
   terraform_plugin_cache:
+  tpch_data:
