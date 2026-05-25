@@ -17,3 +17,13 @@ output "vpc_id" {
   description = "VPC ID shared by every DDA module that runs on top of this data substrate (string)."
   value       = aws_vpc.main.id
 }
+
+output "cluster_identifier" {
+  description = "Aurora cluster identifier. Consumed by Module 04 infra/replica and Module 05 infra/cdc."
+  value       = aws_rds_cluster.main.id
+}
+
+output "writer_identifier" {
+  description = "Aurora writer instance identifier."
+  value       = aws_rds_cluster_instance.writer.identifier
+}

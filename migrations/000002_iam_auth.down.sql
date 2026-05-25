@@ -1,0 +1,3 @@
+GRANT dda_app TO CURRENT_USER;
+DROP OWNED BY dda_app;
+DROP USER IF EXISTS dda_app;
