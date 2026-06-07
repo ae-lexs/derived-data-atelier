@@ -4,12 +4,13 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/ae-lexs/derived-data-atelier/api/internal/config"
 	"github.com/ae-lexs/derived-data-atelier/api/internal/handlers"
+	"github.com/ae-lexs/derived-data-atelier/api/internal/pg"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -19,10 +20,27 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	addr := os.Getenv("HTTP_ADDR")
-	if addr == "" {
-		addr = ":8080"
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("config: %v", err)
 	}
+
+	pool, err := pg.NewPool(ctx, pg.Config{
+		Host:       cfg.PGHost,
+		Port:       cfg.PGPort,
+		User:       cfg.PGUser,
+		Password:   cfg.PGPassword,
+		Database:   cfg.PGDatabase,
+		UseIAMAuth: cfg.UseIAMAuth,
+		AWSRegion:  cfg.AWSRegion,
+	})
+	if err != nil {
+		log.Fatalf("pool: %v", err)
+	}
+	defer pool.Close()
+
+	orders := &handlers.Orders{Pool: pool}
+	analytics := &handlers.Analytics{Pool: pool}
 
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
@@ -30,10 +48,13 @@ func main() {
 	r.Use(middleware.Recoverer)
 
 	r.Get("/healthz", handlers.Health)
+	r.Get("/orders/{key}", orders.Get)
+	r.Post("/orders", orders.Create)
+	r.Get("/analytics/{q}", analytics.Run)
 
-	srv := &http.Server{Addr: addr, Handler: r}
+	srv := &http.Server{Addr: cfg.HTTPAddr, Handler: r}
 	go func() {
-		log.Printf("listening on %s", addr)
+		log.Printf("listening on %s", cfg.HTTPAddr)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("listen: %v", err)
 		}
