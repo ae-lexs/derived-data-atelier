@@ -13,7 +13,7 @@ resource "aws_internet_gateway" "main" {
 resource "aws_subnet" "bastion" {
   vpc_id                  = data.terraform_remote_state.data_model.outputs.vpc_id
   cidr_block              = "10.42.10.0/24"
-  availability_zone       = "us-east-1a"
+  availability_zone       = "us-east-1b"
   map_public_ip_on_launch = true
 
   tags = { Name = "dda-public-bastion" }

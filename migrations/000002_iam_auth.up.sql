@@ -1,4 +1,9 @@
-CREATE USER dda_app;
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'dda_app') THEN
+    CREATE USER dda_app;
+  END IF;
+END $$;
+
 GRANT rds_iam TO dda_app;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO dda_app;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO dda_app;
