@@ -25,6 +25,7 @@ services:
       AWS_REGION: ${AWS_REGION:-us-east-1}
       TF_PLUGIN_CACHE_DIR: /root/.terraform.d/plugin-cache
       TF_INPUT: "0"
+    profiles: [tools]
   migrate:
     image: migrate/migrate:v4.17.1
     volumes:
@@ -58,6 +59,7 @@ services:
     environment:
       CGO_ENABLED: "0"
       GOFLAGS: "-buildvcs=false"
+    profiles: [tools]
   k6:
     image: grafana/k6:0.50.0
     working_dir: /scripts
@@ -66,6 +68,41 @@ services:
     environment:
       BASE_URL: ${BASE_URL:-http://host.docker.internal:8080}
     profiles: [loadtest]
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      PG_HOST:       ${PG_HOST:-pg-fixture}
+      PG_PORT:       "5432"
+      PG_USER:       ${PG_USER:-dda_master}
+      PG_PASSWORD:   ${PG_PASSWORD:-fixture}
+      PG_DATABASE:   ${PG_DATABASE:-tpch}
+      PG_SSL_MODE:   ${PG_SSL_MODE:-disable}
+      USE_IAM_AUTH:  ${USE_IAM_AUTH:-false}
+      AWS_REGION:    ${AWS_REGION:-us-east-1}
+      OTLP_ENDPOINT: ${OTLP_ENDPOINT:-http://localhost:4318}
+      SERVICE_NAME:  ${SERVICE_NAME:-dda-api}
+    depends_on:
+      pg-fixture:
+        condition: service_healthy
+    profiles: [smoke]
+  pg-fixture:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER:     dda_master
+      POSTGRES_PASSWORD: fixture
+      POSTGRES_DB:       tpch
+    volumes:
+      - ./api/testdata/fixture.sql:/docker-entrypoint-initdb.d/01-fixture.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dda_master -d tpch"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+    profiles: [smoke]
 
 volumes:
   terraform_plugin_cache:

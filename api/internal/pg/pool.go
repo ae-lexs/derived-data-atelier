@@ -17,6 +17,7 @@ type Config struct {
 	User       string
 	Password   string // empty when UseIAMAuth is true
 	Database   string
+	SSLMode    string // libpq sslmode; empty defaults to "require" (Aurora). Set "disable" for local fixtures.
 	UseIAMAuth bool
 	AWSRegion  string
 }
@@ -34,9 +35,13 @@ func NewPool(ctx context.Context, cfg Config) (*pgxpool.Pool, error) {
 }
 
 func buildPoolConfig(ctx context.Context, cfg Config) (*pgxpool.Config, error) {
+	sslMode := cfg.SSLMode
+	if sslMode == "" {
+		sslMode = "require"
+	}
 	dsn := fmt.Sprintf(
-		"host=%s port=%d user=%s dbname=%s sslmode=require",
-		cfg.Host, cfg.Port, cfg.User, cfg.Database,
+		"host=%s port=%d user=%s dbname=%s sslmode=%s",
+		cfg.Host, cfg.Port, cfg.User, cfg.Database, sslMode,
 	)
 	if !cfg.UseIAMAuth {
 		dsn = fmt.Sprintf("%s password=%s", dsn, cfg.Password)

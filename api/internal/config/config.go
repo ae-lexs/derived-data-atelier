@@ -13,6 +13,7 @@ type Config struct {
 	PGUser       string
 	PGPassword   string // empty when UseIAMAuth is true
 	PGDatabase   string
+	PGSSLMode    string // libpq sslmode; "require" for Aurora, "disable" for local fixtures.
 	UseIAMAuth   bool
 	AWSRegion    string
 	OTLPEndpoint string
@@ -32,6 +33,7 @@ func Load() (Config, error) {
 		PGUser:       mustGet("PG_USER"),
 		PGPassword:   os.Getenv("PG_PASSWORD"),
 		PGDatabase:   mustGet("PG_DATABASE"),
+		PGSSLMode:    getenv("PG_SSL_MODE", "require"),
 		UseIAMAuth:   getenv("USE_IAM_AUTH", "false") == "true",
 		AWSRegion:    getenv("AWS_REGION", "us-east-1"),
 		OTLPEndpoint: getenv("OTLP_ENDPOINT", "http://localhost:4318"),

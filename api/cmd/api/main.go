@@ -44,6 +44,7 @@ func main() {
 		User:       cfg.PGUser,
 		Password:   cfg.PGPassword,
 		Database:   cfg.PGDatabase,
+		SSLMode:    cfg.PGSSLMode,
 		UseIAMAuth: cfg.UseIAMAuth,
 		AWSRegion:  cfg.AWSRegion,
 	})
