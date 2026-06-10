@@ -1,0 +1,15 @@
+# infra/apparatus/queries/replication-lag.cwli
+#
+# Inputs:  CloudWatch metric AWS/RDS/AuroraReplicaLag for the reader instance
+# Outputs: lag series binned at 30s, correlated with k6 OLAP-window timestamps
+# Contract field: #7 (Observed Result) — Module 04 only; reader replication lag.
+#
+# This is a CloudWatch Metric Insights query rather than a Logs Insights
+# query — Aurora replication lag is a metric, not a log field. Saved here
+# alongside the .cwli catalog so all of the methodology-contract queries
+# live in one folder.
+
+SELECT MAX(AuroraReplicaLag)
+FROM SCHEMA("AWS/RDS", DBInstanceIdentifier)
+WHERE DBInstanceIdentifier = 'dda-aurora-reader'
+GROUP BY bin(30s)

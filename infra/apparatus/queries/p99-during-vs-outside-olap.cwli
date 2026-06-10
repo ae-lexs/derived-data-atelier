@@ -1,0 +1,13 @@
+# infra/apparatus/queries/p99-during-vs-outside-olap.cwli
+#
+# Inputs:  /dda/api log group; ADOT OTLP traces forwarded to CloudWatch
+# Outputs: p99 latency series binned at 30s, scoped to /orders/ requests
+# Contract field: #7 (Observed Result) — OLTP p99 in/out OLAP window
+#
+# Pair with a manual annotation marking the OLAP windows at T+5m, T+10m,
+# T+15m from the k6 start timestamp. Module 03 / 04 / 05 each annotate
+# their own run.
+
+fields @timestamp, @message
+| filter ispresent(http.method) and http.target like /\/orders\//
+| stats pct(latency_ms, 99) as p99 by bin(30s)

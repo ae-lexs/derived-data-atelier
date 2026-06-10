@@ -1,0 +1,13 @@
+# infra/apparatus/queries/cold-start-exclusion.cwli
+#
+# Inputs:  /dda/api log group; ECS task start timestamp from the deploy log
+# Outputs: any aggregation, with the first 5 minutes after k6 start filtered
+# Contract field: #6 (Run Protocol) — discards warmup per execution plan II.4
+#
+# Wrap this filter around the start of any other query that should respect
+# the warmup window. Tune the 5m if your run protocol uses a different
+# warmup duration.
+
+fields @timestamp, @message
+| filter @timestamp > {k6_start_iso} + 300000
+| stats count(*) by bin(1m)

@@ -1,3 +1,186 @@
 {
-  "widgets": []
+  "widgets": [
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 0,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "title": "OLTP latency p50 / p95 / p99 (ms)",
+        "metrics": [
+          ["DdaApi", "http_server_duration_milliseconds", { "stat": "p50", "label": "p50" }],
+          ["DdaApi", "http_server_duration_milliseconds", { "stat": "p95", "label": "p95" }],
+          ["DdaApi", "http_server_duration_milliseconds", { "stat": "p99", "label": "p99" }]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-east-1",
+        "period": 60,
+        "yAxis": { "left": { "min": 0, "label": "ms" } }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 12,
+      "y": 0,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "title": "OLTP throughput (req/s)",
+        "metrics": [
+          ["DdaApi", "http_server_request_count", { "stat": "Sum", "label": "req/s" }]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-east-1",
+        "period": 60,
+        "yAxis": { "left": { "min": 0, "label": "req/s" } }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 6,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "title": "Aurora ACU utilization",
+        "metrics": [
+          ["AWS/RDS", "ServerlessDatabaseCapacity", "DBClusterIdentifier", "dda-aurora", { "stat": "Average", "label": "ACUs" }]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-east-1",
+        "period": 60,
+        "yAxis": { "left": { "min": 0, "label": "ACUs" } }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 8,
+      "y": 6,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "title": "Aurora active connections",
+        "metrics": [
+          ["AWS/RDS", "DatabaseConnections", "DBClusterIdentifier", "dda-aurora", { "stat": "Average", "label": "connections" }]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-east-1",
+        "period": 60,
+        "yAxis": { "left": { "min": 0, "label": "count" } }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 16,
+      "y": 6,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "title": "Buffer-cache hit ratio (Performance Insights)",
+        "metrics": [
+          ["AWS/RDS", "BufferCacheHitRatio", "DBInstanceIdentifier", "dda-aurora-writer", { "stat": "Average", "label": "hit %" }]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-east-1",
+        "period": 60,
+        "yAxis": { "left": { "min": 0, "max": 100, "label": "%" } }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 12,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "title": "Lock-wait events (Performance Insights)",
+        "metrics": [
+          ["AWS/RDS", "DBLoadLockWait", "DBInstanceIdentifier", "dda-aurora-writer", { "stat": "Average", "label": "AAS lock-wait" }]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-east-1",
+        "period": 60,
+        "yAxis": { "left": { "min": 0, "label": "average active sessions" } }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 12,
+      "y": 12,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "title": "Aurora replication lag (Module 04 onward)",
+        "metrics": [
+          ["AWS/RDS", "AuroraReplicaLag", "DBInstanceIdentifier", "dda-aurora-reader", { "stat": "Maximum", "label": "lag (ms)" }]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-east-1",
+        "period": 60,
+        "yAxis": { "left": { "min": 0, "label": "ms" } }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 18,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "title": "DMS source latency (Module 05)",
+        "metrics": [
+          ["AWS/DMS", "CDCLatencySource", "ReplicationTaskIdentifier", "dda-aurora-to-iceberg", { "stat": "Average", "label": "source lag (s)" }]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-east-1",
+        "period": 60,
+        "yAxis": { "left": { "min": 0, "label": "s" } }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 8,
+      "y": 18,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "title": "DMS target latency (Module 05)",
+        "metrics": [
+          ["AWS/DMS", "CDCLatencyTarget", "ReplicationTaskIdentifier", "dda-aurora-to-iceberg", { "stat": "Average", "label": "target lag (s)" }]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-east-1",
+        "period": 60,
+        "yAxis": { "left": { "min": 0, "label": "s" } }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 16,
+      "y": 18,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "title": "CDC end-to-end freshness lag (Module 05; from .cwli)",
+        "metrics": [
+          ["DdaApi", "cdc_freshness_lag_ms", { "stat": "Average", "label": "lag (ms)" }]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-east-1",
+        "period": 60,
+        "yAxis": { "left": { "min": 0, "label": "ms" } }
+      }
+    }
+  ]
 }

@@ -1,0 +1,17 @@
+# infra/apparatus/queries/cdc-freshness-marker.cwli
+#
+# Inputs:  api/-emitted writes carrying a UUID in o_comment; Athena query
+#          log showing the same UUID arriving in the Iceberg table.
+# Outputs: per-marker end-to-end lag in milliseconds.
+# Contract field: #7 (Observed Result) — Module 05 only; CDC freshness lag.
+#
+# The api/ service writes a marker row every 10 seconds during the OLAP
+# window with o_comment = 'cdc-marker:<uuid>:<iso-timestamp>'. This query
+# joins the Aurora write log against the Athena read log on uuid and
+# subtracts timestamps. Reported as median of all markers in the window.
+
+fields @timestamp, @message
+| parse @message /cdc-marker:(?<uuid>[a-f0-9-]{36}):(?<aurora_ts_iso>[\dT:.Z-]+)/
+| filter ispresent(uuid)
+| stats min(@timestamp) as observed_at by uuid, aurora_ts_iso
+| stats avg(observed_at - aurora_ts_iso) as freshness_lag_ms
