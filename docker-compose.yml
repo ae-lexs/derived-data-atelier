@@ -58,6 +58,14 @@ services:
     environment:
       CGO_ENABLED: "0"
       GOFLAGS: "-buildvcs=false"
+  k6:
+    image: grafana/k6:0.50.0
+    working_dir: /scripts
+    volumes:
+      - ./loadtest:/scripts:ro
+    environment:
+      BASE_URL: ${BASE_URL:-http://host.docker.internal:8080}
+    profiles: [loadtest]
 
 volumes:
   terraform_plugin_cache:
