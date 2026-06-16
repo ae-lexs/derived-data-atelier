@@ -27,3 +27,8 @@ output "writer_identifier" {
   description = "Aurora writer instance identifier."
   value       = aws_rds_cluster_instance.writer.identifier
 }
+
+output "cluster_resource_id" {
+  description = "Aurora cluster resource ID (string, dbi-resource-id). Stable for the cluster's lifetime. Used by IAM policies that grant rds-db:connect."
+  value       = aws_rds_cluster.main.cluster_resource_id
+}

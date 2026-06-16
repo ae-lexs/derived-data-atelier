@@ -12,3 +12,8 @@ output "dashboard_name" {
   description = "CloudWatch dashboard name (string). Open at https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#dashboards:name=<value>."
   value       = aws_cloudwatch_dashboard.dda.dashboard_name
 }
+
+output "adot_container_fragment" {
+  description = "ADOT collector container definition fragment (object); consumed by infra/oltp-service when composing the ECS task definition."
+  value       = local.adot_container
+}
