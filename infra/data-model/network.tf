@@ -40,22 +40,3 @@ resource "aws_security_group" "aurora" {
     cidr_blocks = [aws_vpc.main.cidr_block]
   }
 }
-
-# VPC endpoints — no NAT Gateway, saves ~$32/month per AZ.
-resource "aws_vpc_endpoint" "secretsmanager" {
-  vpc_id              = aws_vpc.main.id
-  service_name        = "com.amazonaws.us-east-1.secretsmanager"
-  vpc_endpoint_type   = "Interface"
-  subnet_ids          = [aws_subnet.private_a.id]
-  security_group_ids  = [aws_security_group.aurora.id]
-  private_dns_enabled = true
-}
-
-resource "aws_vpc_endpoint" "logs" {
-  vpc_id              = aws_vpc.main.id
-  service_name        = "com.amazonaws.us-east-1.logs"
-  vpc_endpoint_type   = "Interface"
-  subnet_ids          = [aws_subnet.private_a.id]
-  security_group_ids  = [aws_security_group.aurora.id]
-  private_dns_enabled = true
-}
