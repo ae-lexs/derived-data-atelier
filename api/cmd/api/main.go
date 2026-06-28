@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"log"
+	"log/slog"
 	"net/http"
+	"os"
 	"os/signal"
 	"syscall"
 	"time"
@@ -56,6 +58,14 @@ func main() {
 	orders := &handlers.Orders{Pool: pool}
 	analytics := &handlers.Analytics{Pool: pool}
 
+	// JSON access logger. Its output is the methodology contract's primary data
+	// source: the awslogs driver ships these lines to the /dda/api log group,
+	// where queries/p99-during-vs-outside-olap.cwli reads http.method,
+	// http.target, and latency_ms. chi's stock middleware.Logger emits
+	// plaintext that Logs Insights cannot parse into those fields, so it is
+	// replaced by accessLog below.
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+
 	r := chi.NewRouter()
 	// Rename the server span to METHOD<space>route-pattern after chi has
 	// routed, so dashboards group OLTP vs OLAP traffic by route rather than
@@ -63,7 +73,7 @@ func main() {
 	// http.Server boundary; this middleware just updates its name.
 	r.Use(spanRouteName)
 	r.Use(middleware.RequestID)
-	r.Use(middleware.Logger)
+	r.Use(accessLog(logger))
 	r.Use(middleware.Recoverer)
 
 	r.Get("/healthz", handlers.Health)
@@ -93,6 +103,37 @@ func main() {
 	defer cancel()
 	if err := srv.Shutdown(shCtx); err != nil {
 		log.Fatalf("shutdown: %v", err)
+	}
+}
+
+// accessLog emits one structured JSON line per request to stdout. The fields
+// are nested under "http" so CloudWatch Logs Insights flattens them to the
+// dotted names the methodology query expects: http.method, http.target,
+// http.status. latency_ms is the wall-clock service time in milliseconds and is
+// the value pct(latency_ms, 99) aggregates. /healthz is skipped — ALB probe
+// traffic would otherwise dominate the log group and inflate cost without
+// contributing to the /orders/-scoped p99 measurement (mirrors the otelhttp
+// trace filter above).
+func accessLog(logger *slog.Logger) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path == "/healthz" {
+				next.ServeHTTP(w, r)
+				return
+			}
+			ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
+			start := time.Now()
+			next.ServeHTTP(ww, r)
+			logger.LogAttrs(r.Context(), slog.LevelInfo, "http_request",
+				slog.Group("http",
+					slog.String("method", r.Method),
+					slog.String("target", r.URL.Path),
+					slog.Int("status", ww.Status()),
+				),
+				slog.Float64("latency_ms", float64(time.Since(start).Microseconds())/1000.0),
+				slog.String("request_id", middleware.GetReqID(r.Context())),
+			)
+		})
 	}
 }
 

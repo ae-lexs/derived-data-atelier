@@ -1,6 +1,7 @@
 # infra/apparatus/queries/p99-during-vs-outside-olap.cwli
 #
-# Inputs:  /dda/api log group; ADOT OTLP traces forwarded to CloudWatch
+# Inputs:  /dda/api log group; the API's structured JSON access logs
+#          (one line per request with http.method, http.target, latency_ms)
 # Outputs: p99 latency series binned at 30s, scoped to /orders/ requests
 # Contract field: #7 (Observed Result) — OLTP p99 in/out OLAP window
 #

@@ -85,13 +85,13 @@ resource "aws_ecs_task_definition" "api" {
           awslogs-stream-prefix = "api"
         }
       }
-      # ADOT sidecar temporarily removed for diagnostics — re-add after we
-      # confirm the api/ container can start cleanly.
-      # dependsOn = [
-      #   { containerName = "adot-collector", condition = "START" }
-      # ]
+      
+      dependsOn = [
+        { containerName = "adot-collector", condition = "START" }
+      ]
     },
-    # data.terraform_remote_state.apparatus.outputs.adot_container_fragment,
+
+    data.terraform_remote_state.apparatus.outputs.adot_container_fragment,
   ])
 }
 

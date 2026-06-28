@@ -1,41 +1,31 @@
 {
   "widgets": [
     {
-      "type": "metric",
+      "type": "log",
       "x": 0,
       "y": 0,
       "width": 12,
       "height": 6,
       "properties": {
-        "title": "OLTP latency p50 / p95 / p99 (ms)",
-        "metrics": [
-          ["DdaApi", "http_server_duration_milliseconds", { "stat": "p50", "label": "p50" }],
-          ["DdaApi", "http_server_duration_milliseconds", { "stat": "p95", "label": "p95" }],
-          ["DdaApi", "http_server_duration_milliseconds", { "stat": "p99", "label": "p99" }]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
+        "title": "OLTP latency p50 / p95 / p99 (ms) — /orders/",
+        "query": "SOURCE '/dda/api' | filter ispresent(http.method) and http.target like /\\/orders\\// | stats pct(latency_ms, 50) as p50, pct(latency_ms, 95) as p95, pct(latency_ms, 99) as p99 by bin(30s)",
         "region": "us-east-1",
-        "period": 60,
-        "yAxis": { "left": { "min": 0, "label": "ms" } }
+        "view": "timeSeries",
+        "stacked": false
       }
     },
     {
-      "type": "metric",
+      "type": "log",
       "x": 12,
       "y": 0,
       "width": 12,
       "height": 6,
       "properties": {
-        "title": "OLTP throughput (req/s)",
-        "metrics": [
-          ["DdaApi", "http_server_request_count", { "stat": "Sum", "label": "req/s" }]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
+        "title": "OLTP throughput (req/min) — /orders/",
+        "query": "SOURCE '/dda/api' | filter ispresent(http.method) and http.target like /\\/orders\\// | stats count(*) as requests by bin(1m)",
         "region": "us-east-1",
-        "period": 60,
-        "yAxis": { "left": { "min": 0, "label": "req/s" } }
+        "view": "timeSeries",
+        "stacked": false
       }
     },
     {
